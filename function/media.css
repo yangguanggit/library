@@ -1,0 +1,43 @@
+/**
+ * 屏幕自适应css
+ * @author lilei
+ */
+@charset "utf-8";
+html{
+	font-size: 62.5%;
+}
+@media only screen and (min-width: 321px){
+	html{
+		font-size: 62.5% !important;
+	}
+}
+@media only screen and (min-width: 359px){
+	html{
+		font-size: 62.5% !important;
+	}
+}
+@media only screen and (min-width: 374px){
+	html{
+		font-size: 62.5% !important;
+	}
+}
+@media only screen and (min-width: 481px){
+	html{
+		font-size: 94% !important;
+	}
+}
+@media only screen and (min-width: 561px){
+	html{
+		font-size: 109% !important;
+	}
+}
+@media only screen and (min-width: 641px){
+	html{
+		font-size: 125% !important;
+	}
+}
+@media only screen and (min-width: 666px){
+	html{
+		font-size: 125% !important;
+	}
+}

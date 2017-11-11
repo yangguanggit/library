@@ -1,0 +1,71 @@
+1.切换到apache配置文件夹，新建文件夹ssl
+	mkdir ssl
+	cd ssl
+2.自签名证书
+	(1)生成私钥
+		openssl genrsa -out server.key
+	(2)生成自签名证书
+		openssl req -new -sha256 -x509 -days 365 -key server.key -out server.crt
+		输入国家、省、市、组织、公司、网站域名/ip信息，生成文件
+3.配置apache服务器ssl
+	(1)修改httpd.conf，去掉下面三项注释
+		LoadModule ssl_module libexec/apache/mod_ssl.so
+		Include /etc/apache/extra/httpd-ssl.conf
+		Include /etc/apache/extra/httpd-vhosts.conf
+	(2)修改httpd-ssl.conf，配置文件路径
+		SSLCertificateFile "/etc/apache/ssl/server.crt"
+		SSLCertificateKeyFile "/etc/apache/ssl/server.key"
+	(3)修改httpd-vhosts.conf，配置虚拟主机
+		<VirtualHost *:443>
+		    SSLEngine on
+		    SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
+		    SSLCertificateFile /etc/apache/server.crt
+		    SSLCertificateKeyFile /etc/apache/server.key
+			ServerName web.test.com
+			DocumentRoot /website/test
+			ServerAlias *test*
+			ServerAdmin admin@qq.com
+			ErrorLog "/log/apache/test-error.log"
+			CustomLog "/log/apache/test-access.log" common
+			<Directory "/website/test">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost>
+	(4)重启apache，访问https://web.test.com，浏览器提示安全警告（导入CA根证书并信任可解决），继续访问可正常访问
+4.自己作为CA签发证书
+	(1)在ssl目录下新建文件夹ca及子目录
+		mkdir ca
+		cd ca
+		mkdir -p demoCA/newcerts
+		touch demoCA/index.txt
+		touch demoCA/serial
+		echo 01 > demoCA/serial
+	(2)生成CA私钥
+		# 使用des3加密算法，需要输入四位以上密码
+		openssl genrsa -des3 -out ca.key 4096
+	(3)生成CA证书
+		openssl req -new -x509 -days 365 -key ca.key -out ca.crt
+		输入ca.key密码、国家、省、市、组织、公司、网站域名/ip信息，生成文件
+	(4)生成服务器私钥
+		openssl genrsa -out server.key 4096
+	(5)生成证书请求文件
+		openssl req -new -key server.key -out server.csr
+	(6)自己作为CA签发证书
+		openssl ca -in server.csr -out server.crt -cert ca.crt -keyfile ca.key -days 365
+		输入ca.key密码，对打印出的证书详细确认，输入两次y，生成文件
+5.测试CA证书
+	(1)切换到ssl文件夹，删除原来自签名证书文件，重启apache发现https://web.test.com不能访问
+		rm server.key
+		rm server.crt
+		重启apache
+	(2)把ca文件夹内CA签发证书复制出来，重启apache发现https://web.test.com又能正常访问，浏览器依然提示安全警告
+		cp server.key .
+		cp server.crt .
+		重启apache
+	(3)测试CA根证书可用性
+		访问https://web.test.com，由于自己的CA根证书未在信任列表，浏览器会有安全警告
+		双击ca.crt导入CA证书，并设置始终信任
+		重新访问https://web.test.com，浏览器不会有安全警告

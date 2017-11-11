@@ -1,0 +1,2 @@
+mac系统打包安装php（包含常用库和扩展）
+http://php-osx.liip.ch

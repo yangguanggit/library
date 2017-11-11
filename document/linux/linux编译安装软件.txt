@@ -1,0 +1,11 @@
+1.下载安装包源码，解压，进入安装包根目录
+
+2.执行autoconf命令，根据config.m4生成configure脚本
+
+3.执行./configure（配置选项），检测系统和环境状态、依赖库和头文件、编译配置等
+
+4.执行make命令，将c源文件编译为目标文件
+
+5.执行make install命令，将编译好的的目标文件放到系统指定目录
+
+6.c语言编译器包括gcc/g++（linux）、clang（freebsd）
