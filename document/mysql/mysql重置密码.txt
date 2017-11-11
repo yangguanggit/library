@@ -1,0 +1,22 @@
+1.重置密码
+	(1)关闭mysql服务器
+		# 也可以在系统偏好关闭mysql服务
+		sudo /usr/local/mysql/support-files/mysql.server stop
+	(2)进入目录
+		cd /usr/local/mysql/bin
+		# 安全模式运行mysql
+		sudo ./mysqld_safe --skip-grant-tables &
+	(3)新开个终端
+		# 空密码登录mysql
+		/usr/local/mysql/bin/mysql
+	(4)执行语句
+		use mysql;
+		# 大概就是获取权限，要不他不让你改
+		flush privileges;
+		# 完成修改
+		set password for 'root'@'localhost'=password('新密码');
+
+2.修改密码
+	cd /usr/local/mysql/bin
+	# 完成修改
+	./mysqladmin -u root -p '旧密码' '新密码';

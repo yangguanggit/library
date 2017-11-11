@@ -1,0 +1,14 @@
+1.“phing”是一个递归的缩写词，全称为“Phing Is Not GNU make”，是php自动部署应用程序的一种方法。它还可以让我们与svn服务器集成，还可以采用phpunit自动化方式执行单元测试，并且还可以实现文件复制这样的安装、部署任务
+
+2.安装
+	phing随pear扩展包发布，需要使用pear包管理程序来安装
+	pear channel-discover pear.phing.info
+	pear install –alldeps phing/phing
+
+3.注释：pear可以与svn（subversion）进行集成，但phing对svn的支持是可选的，所以必须获得pear包VersionControl_SVN。但用pear install pear/VersionControl_SVN命令安装的话，由于它还是个处于测试状态的包，我们不能成功安装。所以，必须使用完整的频道uri来安装它
+	pear install channel://pear.php.net/VersionControl_SVN-0.3.3
+
+4.phing部署脚本build.xml文件
+    phing使用了xml格式的配置文件来定义部署脚本，从中可以获得工程信息，定义操作组（target）。新建一个基本的phing部署脚本，其中定义了4个目标，见build.xml
+    # 执行脚本文件，不指定文件时默认执行build.xml
+    phing -f build.xml

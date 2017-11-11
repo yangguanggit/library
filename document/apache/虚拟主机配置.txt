@@ -1,0 +1,174 @@
+1.基于ip
+	(1)假设服务器有个ip地址为192.168.1.10，使用ifconfig在同一个网络接口eth0上绑定3个ip
+		[root@localhost root]# ifconfig eth0:1 192.168.1.11
+		[root@localhost root]# ifconfig eth0:2 192.168.1.12
+		[root@localhost root]# ifconfig eth0:3 192.168.1.13
+	(2)修改hosts文件，添加三个域名映射
+		192.168.1.11 web.test1.com
+		192.168.1.12 web.test2.com
+		192.168.1.13 web.test3.com
+	(3)建立虚拟主机站点根目录，如在/website目录下建立test1、test2、test3文件夹，其中分别存放1.html、2.html、3.html
+		/website/test1/1.html
+		/website/test2/2.html
+		/website/test3/3.html
+	(4)在httpd.conf中将附加配置文件httpd-vhosts.conf包含进来，接着在httpd-vhosts.conf中添加配置
+		# 完整示例
+		# <VirtualHost *:80>
+		#     ServerName localhost
+		#     DocumentRoot /website
+		# 	  ServerAlias *local*
+		#     ServerAdmin admin@qq.com
+		#     ErrorLog "/log/apache/localhost-error.log"
+		#     CustomLog "/log/apache/localhost-access.log" common
+		#     <Directory "/website">
+		#         Options +Indexes +FollowSymLinks +ExecCGI
+		#         AllowOverride none
+		#         Order allow,deny
+		#         Allow from all
+		#     </Directory>
+		# </VirtualHost>
+		<VirtualHost 192.168.1.11:80>
+			ServerName web.test1.com
+			DocumentRoot /website/test1
+			<Directory "/website/test1">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost>
+
+		<VirtualHost 192.168.1.12:80>
+			ServerName web.test1.com
+			DocumentRoot /website/test2
+			<Directory "/website/test2">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+　 			</Directory>
+		</VirtualHost>
+
+		<VirtualHost 192.168.1.13:80>
+			ServerName web.test1.com
+			DocumentRoot /website/test3
+			<Directory "/website/test3">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost>
+
+2.基于域名
+	(1)修改hosts文件，添加三个域名映射
+		192.168.1.10 web.test1.com
+		192.168.1.10 web.test2.com
+		192.168.1.10 web.test3.com
+	(2)建立虚拟主机站点根目录
+		/website/test1/1.html
+		/website/test2/2.html
+		/website/test3/3.html
+	(3)在httpd.conf中将附加配置文件httpd-vhosts.conf包含进来，接着在httpd-vhosts.conf中添加配置
+		NameVirtualHost *:80
+		<VirtualHost *:80>  
+			ServerName *
+			DocumentRoot /website
+			<Directory "/website">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost>
+
+		<VirtualHost *:80>
+			ServerName web.test1.com
+			DocumentRoot /website/test1
+			<Directory "/website/test1">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost> 
+
+		<VirtualHost *:80>
+			ServerName web.test2.com
+			DocumentRoot /website/test2
+			<Directory "/website/test2">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost>
+
+		<VirtualHost *:80>
+			ServerName web.test3.com
+			DocumentRoot /website/test3
+			<Directory "/website/test3">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost>
+		为了使用基于域名的虚拟主机，必须指定服务器ip地址（和可能的端口）来使主机接受请求，可以用NameVirtualHost指令进行配置。如果服务器上所有的ip地址都会用到，你可以用*作为NameVirtualHost的参数。在NameVirtualHost指令中指明ip地址并不会使服务器自动侦听那个ip地址，这里设定的ip地址必须对应服务器上的一个网络接口
+		为你建立的每个虚拟主机设定<VirtualHost>配置块，<VirtualHost>的参数与NameVirtualHost指令的参数是一样的。每个<VirtualHost>定义块中，至少都会有一个ServerName指令来指定主机域名和一个DocumentRoot指令来指定站点路径。如果在现有的web服务器上增加虚拟主机，必须也为现存的主机建造一个<VirtualHost>定义块。其中ServerName和DocumentRoot所包含的内容应该与全局的保持一致，且要放在配置文件的最前面，扮演默认主机的角色
+
+3.基于端口
+	(1)建立虚拟主机站点根目录
+		/website/test1/1.html
+		/website/test2/2.html
+		/website/test3/3.html
+	(2)修改httpd.conf添加监听端口并将附加配置文件httpd-vhosts.conf包含进来
+		Listen 80
+		Listen 8080
+		Listen 8081
+	(3)修改httpd-vhosts.conf中添加配置
+		<VirtualHost 192.168.1.10:80>
+			DocumentRoot /website/test1/
+			ServerName web.test1.com
+			<Directory "/website/test1">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost>
+
+		<VirtualHost 192.168.1.10:8080>
+			DocumentRoot /website/test2
+			ServerName web.test2.com
+			<Directory "/website/test2">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost>
+
+		<VirtualHost 192.168.1.10:8081>
+			DocumentRoot /website/test3
+			ServerName web.test3.com
+			<Directory "/website/test3">
+				Options +Indexes +FollowSymLinks +ExecCGI
+				AllowOverride none
+				Order allow,deny
+				Allow from all
+			</Directory>
+		</VirtualHost>
+	(4)非80端口通过配置域名转发映射指定域名到指定ip指定端口
+		NameVirtualHost *:80
+		<VirtualHost *:80>
+			ServerName web.test2.com
+			ProxyPass / http://192.168.1.10:8080
+			ProxyPassReverse / http://192.168.1.10:8080
+		</VirtualHost>
+
+		<VirtualHost *:80>
+			ServerName web.test3.com
+			ProxyPass / http://192.168.1.10:8081
+			ProxyPassReverse / http://192.168.1.10:8081
+		</VirtualHost>
