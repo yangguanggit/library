@@ -1,0 +1,65 @@
+1.rsync：remote synchronize顾名思意就知道它是一款实现远程同步功能的软件，它在同步文件的同时，可以保持原来文件的权限、时间、软硬链接等附加信息。rsync是用“rsync算法”提供了一个客户机和远程文件服务器的文件同步的快速方法，而且可以通过ssh方式来传输文件，这样其保密性也非常好，另外它还是免费的软件
+	(1)能更新整个目录和树和文件系统
+	(2)有选择性的保持符号链链、硬链接、文件属于、权限、设备以及时间等
+	(3)对于安装来说，无任何特殊权限要求
+	(4)对于多个文件来说，内部流水线减少文件等待的延时
+	(5)能用rsh、ssh或直接端口做为传输入端口
+	(6)支持匿名rsync同步文件，是理想的镜像工具
+
+2.配置rsync服务器
+	(1)安装rsync
+		检查rsync，xinetd是否已经安装（rsync一般系统自带，xinetd需要安装）
+		debian、ubuntu等在线安装方法
+		sudo apt-get install rsync
+		fedora、redhat等在线安装方法
+		yum install rsync
+		fedora、redhat等rpm包安装方法
+		rpm -ivh rsync
+		源码编译安装（使用源码包编译安装之前，需要安装gcc等编译工具）
+		tar xvf rsync.tar.gz
+		cd rsync
+		./configure --prefix=/usr/local/rsync
+		make
+		make install
+	(2)服务器配置
+		启动rsync服务器及防火墙的设置
+		--daemon参数方式，是让rsync以服务器模式运行
+		/usr/bin/rsync --daemon  --config=/etc/rsyncd.conf
+		--config用于指定rsyncd.conf的位置,如果在/etc下可以不写
+		xinetd方式
+		修改services
+		nano -w /etc/services
+		加入如下内容
+		rsync　　873/tcp　　# rsync
+		rsync　　873/udp　　# rsync
+		这一步一般可以不做，系统通常都有这两行，如没有的话就自行加入，修改的目的是让系统知道873端口对应的服务名为rsync
+		linux防火墙是用iptables，所以我们至少在服务器端要让你所定义的rsync服务器端口通过，客户端上也应该让通过
+		iptables -A INPUT -p tcp -m state --state NEW  -m tcp --dport 873 -j ACCEPT
+		查看一下防火墙是不是打开了873端口
+		iptables -L
+		注释：centos需要关闭selinux执行setenforce 0
+		修改xinetd配置文件，打开rsync这个daemon，一旦有rsync客户端要连接时，xinetd会把它转接给rsyncd(port 873)
+		vi /etc/xinetd.d/rsync
+		修改以下内容
+		disable=no
+		rsync的主要有三个配置文件rsyncd.conf(主配置文件)、rsyncd.secrets(用户密码文件)、rsyncd.motd(rysnc服务器信息)。服务器配置文件/etc/rsyncd.conf默认不存在，请新建它
+		touch /etc/rsyncd.conf
+		touch /etc/rsyncd.secrets
+		touch /etc/rsyncd.motd
+		将rsyncd.secrets这个密码文件的文件属性设为root拥有，且权限要设为600，否则无法备份成功
+		chown root.root /etc/rsyncd.conf
+		chmod 600 /etc/rsyncd/rsyncd.secrets
+		编辑文件，文件内容详见rsyncd.conf、rsyncd.secrets、rsyncd.motd
+		重启rsync服务
+		service xinetd restart
+	(3)客户端连接
+		查看文件列表
+		rsync --list-only root@服务器ip::模块名
+		开启备份
+		rsync -avzP root@服务器ip::模块名 本地存放路径
+	(4)客户端定时备份
+		新建rsync密码文件，并修改权限(只存放密码，与服务器密码文件密码一致)，内容详见rsync.secrets
+		新建shell脚本文件，内容详见rsync.sh
+		写入crontab，定时执行任务
+		crontab -e
+		0 3 * * * shell脚本文件路径

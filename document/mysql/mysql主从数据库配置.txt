@@ -1,0 +1,52 @@
+1.配置mysql主服务器
+	(1)在主服务器上为从服务器建立一个用户(mysql下执行)
+		grant replication slave on *.* 'slave用户名'@'从服务器ip' identified by 'slave密码';
+	(2)编辑主服务器配置文件
+		vi /etc/my.cnf
+		[mysqld]内添加或修改
+		# server-id唯一，主从不能重复
+		server-id=1
+		# mysql命令，可设置不同模式
+		log-bin=mysql-bin
+		# 需要同步的数据库，如有多个可重复设置该项
+		binlog-do-db=test
+		# 忽略的数据库，如有多个可重复设置该项
+		binlog-ignore-db=mysql
+	(3)重启mysql服务
+		service mysqld restart
+
+2.配置mysql从服务器
+	(1)编辑从服务器配置文件
+		vi /etc/my.cnf
+		[mysqld]内添加或修改
+		server-id=2
+		master-host=主机ip
+		master-user=用户名
+		master-password=密码
+		master-port=端口
+		# 需要同步的数据库，如有多个可重复设置该项
+		replicate-do-db=test
+		# 忽略的数据库，如有多个可重复设置该项
+		replicate-ignore-db=mysql
+		# 忽略错误类型，避免因错误中断同步
+		slave-skip-errors=1007,1008,1053,1062,1213,1158,1159
+	(2)重启mysql服务
+		service mysqld restart
+	(3)开启同步（mysql内执行）
+		slave start;
+
+3.测试（mysql下执行）
+	show slave status\G
+	查看列表
+	Slave_IO_Running:Yes
+	Slave_SQL_Running:Yes
+	表示配置成功，可在主服务器中新建或删除数据测试
+
+4.注释：mysql版本从5.1.7以后开始就不支持“master-host”类似的参数，不能在my.cnf中配置master-host master-user master-password master-port
+	(1)主服务器中查看（mysql内执行）
+		show master status\G
+		记录file position值（对应master_log_file master_log_pos的值）
+	(2)从服务器配置（mysql内执行）
+		change master to master_host='主服务器ip',master_user='slave用户名',master_password='slvae密码',master_log_file='mysql-bin.000001',master_log_pos=10000;
+	(3)开启同步（从服务器mysql内执行）
+		slave start;

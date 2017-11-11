@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="test" basedir="." default="install">
+	<property name="package" value="${phing.project.name}" override="true" />
+	<property name="srcdir" value="${project.basedir}" override="true" />
+	<property name="installdir" value="install" override="true" />
+
+	<!-- 源码文件 -->
+	<fileset dir="${srcdir}" id="codefiles">
+		<include name="**" />
+	</fileset>
+
+	<!-- 准备 -->
+	<target name="prepare">
+		<echo msg="mking directory ${installdir}" />
+		<mkdir dir="${installdir}" />
+	</target>
+
+	<!-- 获取最新版本 -->
+	<target name="get">
+		<svnupdate svnpath="file://d:/svn/myfirstrepo" todir="${srcdir}" />
+	</target>
+
+	<!-- 单元测试 -->
+	<target name="phpunit">
+		<phpunit haltonfailure="true" printsummary="true">
+			<batchtest>
+				<fileset dir="./test">
+					<include name="*test.php" />
+				</fileset>
+			</batchtest>
+		</phpunit>
+	</target>
+
+	<!-- 安装 -->
+	<target name="install" depends="phpunit,prepare">
+		<copy todir="${installdir}" overwrite="true">
+			<fileset refid="codefiles" />
+		</copy>
+		<copy file="./build.xml" tofile="./${installdir}/build.xml" overwrite="true" />
+	</target>
+</project>

@@ -1,0 +1,227 @@
+﻿1.linux目录结构
+	/ 根目录
+	/root root用户目录
+	/home 普通用户目录
+	/boot 系统引导目录
+	/etc 系统配置目录
+	/bin 系统常用命令目录
+	/sbin 需要管理权限才能使用的命令目录
+	/dev 系统设备目录
+	/usr 系统默认软件安装目录
+	/mnt 系统默认光驱软驱挂载目录
+	/tmp 系统临时目录
+	/var 系统经常变化文件目录
+
+2.linux启动过程
+	bios自检
+	启动grub/lilo
+	运行linux内核并检测硬件
+	运行系统第一个进程init
+	init读取系统引导配置文件/etc/inittab中的信息进行初始化
+	/etc/rc.d/rc.sysinit系统初始化脚本
+	/etc/rc.d/rcX.d/[KS]*根据运行级别配置服务（终止以K开头的服务，开始以S开头的服务）
+	/etc/rc.d/rc.local执行本地特殊配置
+	其他特殊服务
+
+3.init[0123456]运行级别
+	0 关机
+	1 单用户
+	2 多用户没有网络服务
+	3 多用户有网络服务
+	4 系统保留给用户使用
+	5 图形界面
+	6 重启
+	常用3和5，vi /etc/inittab修改id:5:initdefault:中的id值，如果设置成了0或6，可在系统刚启动时grub界面进入单用户模式修改inittab文件
+
+4.常用shell种类
+	/bin/sh（常用）
+	/bin/csh
+	/bin/ksh
+	chsh -s /bin/csh 修改shell（注销重新登录生效）
+
+5.系统操作
+	man 帮助命令
+	startx 进入图形界面
+	shutdown -h now 立即关机
+	shutdown -r now 立即重启
+	reboot 重启
+	logout 注销
+	sudo 使用root权限
+	sudo su root 切换到root用户
+	按一次tab键命令自动补全，两次tab键列出可选命令列表
+	alias ls='ls -l' 给命令设置简写形式（效果相同）
+	setup 系统服务、网络等配置界面（网络配置生效需要运行/etc/rc.d/init.d/network restart）
+	env 查看系统环境变量
+	vi /root/.bash_profile 修改root用户的环境变量（PATH等），每个用户主目录都可以单独设置，只在配置的用户登录时生效（注销重新登录生效）
+	vi /etc/profile 修改所有用户环境变量（PATH等），所有用户登录生效（注销重新登录生效）
+	vi /root/.bashrc 修改root用户登录后自动执行的shell文件（自启动），每个用户主目录都可以单独设置，只在配置的用户登录时生效（注销重新登录生效）
+	vi /etc/bashrc 修改所有用户登录后执行的shell文件（自启动），所有用户登录生效（注销重新登录生效）
+	export PATH=$PATH:$HOME/bin:/root/test 临时添加环境变量PATH，引用原来的值$PATH，$HOME表示工作主目录，:是路径分隔符
+	echo $PATH 显示当前PATH环境变量
+	date 显示当前系统时间
+	date mmddhhmmyyyy.ss 设置时间（月月日日时时分分年年年年.秒秒）
+	cal 2008 查看年历
+	cal 8 2008 查看月历
+	fdisk -l 查看linux分区情况
+	df test 查看目录所属分区
+	df -h 查看分区使用情况
+	history 最近执行的命令
+	history 5 最近执行的5个命令
+	!5 执行编号为5的命令
+	mount /dev/cdrom test 把光驱挂载到指定目录
+	umount /dev/cdrom test 卸载光驱
+	groupadd 组名 添加组
+	useradd 用户名 添加用户
+	useradd -g 组名 用户名 添加用户同时指定所在组
+	passwd 用户名 修改密码（不指定用户名修改当前登录用户密码）
+	userdel 用户名 删除用户
+	userdel -r 用户名 删除用户，同时删除用户主目录
+	usermod -g 组名 用户名 更改用户所在组
+	cat /etc/group 查看所有组信息
+	cat /etc/passwd 查看所有用户信息
+	crontab -e 设置任务调度
+	* * * * * date > /test.txt 每分钟向文件写入当前系统时间（分钟，小时，日期，月份，星期）
+	调度多个任务
+	crontab -e直接写入
+	把多个任务写入可执行文件test.sh，修改文件操作权限可执行，crontab -e中添加* * * * * test.sh（推荐）
+	crontab -r 取消任务调度
+	crontab -l 列出任务调度列表
+	gcc -o test test.cpp 编译c程序
+	./test 执行命令/脚本
+	./test & 后台方式执行命令/脚本
+	| 管道命令，把|前的命令执行结果交给|后的命令执行
+	more 显示文件内容带分页
+	less 显示文件内容带分页
+	ls -al | more 长列表显示所有文件并分页
+	ls -l > test.txt 命令执行结果写到文件中（文件不存在创建，存在覆盖），覆盖写
+	ls -l >> test.txt 命令执行结果写到文件中，追加写
+	test.txt < test1.txt 把test1.txt内容写入test.txt，覆盖写（<<追加写）
+	ifconfig 查看网络配置
+	ifconfig eth0 192.168.1.10 配置第一块网卡ip（立即生效，临时生效，重启后ip恢复）
+	ifconfig eth0 network 255.255.255.0 配置第一块网卡子网掩码（立即生效，临时生效，重启后ip恢复）
+	vi /etc/sysconfig/network-scripts/ifcfg-eth0 修改网络配置（网络配置生效需要运行/etc/rc.d/init.d/network restart）
+	ping ip/域名 检查网络是否连通
+	netstat -an 显示网络信息
+	netstat -anp 显示网络信息和对应进程号
+	route 查看本机路由情况
+	traceroute ip/域名 检测数据包在网络上传输过程
+	top 进程动态监控（输入u指定用户，输入k终止进程，输入q退出）
+	top -d 10 指定系统更新进程时间10s
+	ps -aux 以用户格式显示所有进程运行参数（-a所有，-u用户格式，-x运行参数）
+	kill 进程号 终止进程
+	kill -9 进程号 强制终止进程
+	vi /etc/ssh/sshd_config 配置ssh服务
+	ssh root@192.168.1.1 secure shell，linux远程登录和传送文件工具软件（sshd服务默认监听22号端口）
+	scp /root/test.txt root@192.168.1.1:/root 把本地root目录下的test.txt复制到远程主机root目录
+	scp root@192.168.1.1:/root/test.txt /root 把远程主机root目录下的test.txt复制到本地root目录
+	scp -r /root/test root@192.168.1.1:/root 把本地root目录下的test文件夹复制到远程主机root目录
+	scp -r root@192.168.1.1:/root/test /root 把远程主机root目录下的test文件夹复制到本地root目录
+6.文件操作
+	. 当前目录（相对路径）
+	.. 上一级目录（相对路径）
+	pwd 显示当前路径（绝对路径）
+	ls 浏览当前文件列表（同dir）
+	ls -a 显示当前隐藏文件
+	ls -l 列表格式浏览当前文件列表
+	cd /test 切换目录（cd后不跟参数和路径，切换到用户主目录）
+	vi test.txt 如果文件存在vi编辑器打开，不存在新建
+	vi编辑器中i切换到编辑模式，esc推出编辑模式，:wq保存退出，:q!退出不保存，:10定位到指定行数，:/test搜索test
+	touch test.txt 新建空文件
+	mkdir test 新建空目录
+	rmdir test 删除空目录
+	cp test.txt test 复制文件
+	cp -r test test1 递归复制到text1
+	mv test.txt test 移动文件
+	mv test.txt test1.txt 重命名为test1.txt
+	rm test.txt 删除文件或空目录
+	rm -rf test 删除文件或目录中所有文件（非空目录也可以删除），-r递归，-f强制
+	ln -s /etc/inittab /root/inittab 建立连接文件，inittab实际指向/etc/inittab（建立快捷方式，需要写绝对路径）
+	-rwxr--r-- 文件权限
+	一位 文件类型
+	- 普通文件
+	d 文件夹
+	l 链接文件
+	二到四位 文件所有者对文件操作权限
+	五到七位 文件所在组对文件操作权限
+	八到十位 其它组用户对文件操作权限
+	x 可执行权限，数字形式1
+	w 可写权限，数字形式2
+	r 可读权限，数字形式4
+	777 最高权限-rwxrwxrwx（1+2+4）
+	chmod 744 test.txt 修改文件操作权限为-rwxr--r--
+	chmod -R 744 test 地柜修改文件夹权限为-rwxr--r--
+	chown 用户名 test.txt 修改文件所有者
+	chgrp 组名 test.txt 修改文件所在组
+	grep 'hello' test.txt 文件中查找相关字符
+	grep -n 'hello' test.txt 查找字符并显示行数
+	find / -name test.txt 从根目录开始按文件名查找文件
+	find / -size +10k 从根目录开始按文件大小查找10k大小的文件
+	* 多个字母或数字
+	? 一个字母或数字
+	\ 转义字符
+	[1-9] 范围
+	zip test.zip test.txt 创建zip格式压缩文件（多个文件以空格分隔）
+	zip -m test.zip test.txt 压缩文件后自动删除原文件
+	zip -r test.zip test 当前目录的子目录一起压缩（-j忽略子目录）
+	unzip test.zip 解压zip压缩文件
+	unzip -v test.zip 查看zip压缩包内容（-l，-z也可以）
+	以gzip和gunzip处理.gz文件，bzip2和bunzip2处理.bz2文件，compress和uncompress处理.z文件
+	gzip压缩时间快，bz2压缩率高
+	tar -c 创建tar归档文件
+	tar -x 解包tar归档文件
+	tar -f 指定源文件（并带参数）
+	tar -v 输出详细信息
+	tar -cf test.txt test.tar 创建tar归档文件（不压缩）
+	tar -xf test.tar 解包tar归档文件文件
+	tar -czf test.txt test.tar.gz 创建归档文件并使用gzip压缩
+	tar -xzf test.tar.gz 解压gzip压缩的归档文件
+	tar -cjf test.txt test.tar.bz2 创建归档文件并使用bzip2压缩
+	tar -xjf test.tar.bz2 解压bzip2压缩的归档文件
+	tar -cZf test.txt test.tar.z 创建归档文件并使用compress压缩
+	tar -xZf test.tar.z 解压compress压缩的归档文件
+7.应用程序
+	redhat系列
+	yum install 软件名 安装软件包（自动解决依赖关系）
+	yum update 软件名 更新软件包
+	yum remove 软件名 卸载软件包
+	yum search 软件名 搜索软件包
+	yum list 列出所有软件包
+	yum info 软件名 查询软件包信息
+	yum clean all 清除已安装过的软件包
+	rpm -i rpm软件包路径 安装rpm软件包
+	rpm -ivh rpm软件包路径 安装rpm软件包（带提示信息和安装进度）
+	rpm -e rpm软件包名 卸载rpm软件包
+	rpm -e --nodeps rpm软件包名 强制卸载rpm软件包
+	rpm -u rpm软件包路径 升级rpm软件包
+	rpm -q rpm软件包名 查看指定rpm软件包是否已经安装
+	rpm -qa 查看所有已安装rpm软件包
+	ubuntu系列
+	apt-get install 软件名 安装软件包（自动解决依赖关系）
+	apt-get install 软件名 --reinstall 重新安装软件包
+	apt-get update 软件名 更新软件包
+	apt-get remove 软件名 卸载软件包
+	apt-get remove 软件名 --purge 卸载软件包并删除配置文件
+	apt-get source 软件名 下载软件包源码
+	apt-get check 检查是否有损坏的依赖
+	apt-get clean && apt-get autoclean 清理无用的软件包
+	apt-cache search 软件名 搜索软件包
+	apt-cache show 软件名 查看软件包信息
+	apt-cache depends 软件名 查看软件包依赖
+	apt-cache redepends 软件名 查看该软件包被哪些包依赖
+	dpkg -i deb软件包名 安装deb软件包
+	dpkg -r deb软件包名 卸载deb软件包
+	dpkg -l 列出已安装deb软件包
+	dpkg -c deb软件包名 列出deb软件包内容
+	dpkg -I deb软件包名 从deb软件包中提取信息
+	vi /etc/samba/smb.conf 配置samba服务器
+	smbpasswd 用户名 设置指定用户samba密码
+	cat /etc/passwd | mksmbpasswd.sh > /etc/samba/smbpasswd 把系统用户添加到samba用户列表
+	service smb start 启动smb服务
+	service smb restart 重启smb服务
+	service smb stop 关闭smb服务
+	mysql -u 用户名 -p密码 登录mysql数据库
+	mysqldump -u 用户名 -p密码 数据库名 > test.bak 备份mysql数据库
+	mysqldump -u 用户名 -p密码 数据库名 表名 > test.bak 备份mysql数据表
+	mysqldump -u 用户名 -p密码 --databases 数据库1 数据库2 > test.bak 备份mysql多个数据库
+	mysqldump -u 用户名 -p密码 -all-databases > test.bak 备份mysql所有数据库
+	mysql -u 用户名 -p密码 数据库名 < test.bak 恢复mysql数据库（需要建立一个空数据库）

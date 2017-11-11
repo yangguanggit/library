@@ -1,0 +1,39 @@
+1.主配置文件或对应虚拟主机配置文件中添加
+	<Directory "/website/test">
+		Options +Indexes +FollowSymLinks +ExecCGI
+		AllowOverride AuthConfig
+		Order allow,deny
+		Allow from all
+	</Directory>
+
+2.在/website/test目录下新建.htaccess文件并添加
+	# 登录窗口提示信息login
+	AuthName "login"
+	# 基本验证类型
+	AuthType Basic
+	# 用户密码文件路径
+	AuthUserFile /website/test/.htpasswd
+	# 用户密码文件中验证成功用户通过（require test，只有test用户通过）
+	require valid-user
+
+3.生成用户密码文件
+	# 生成用户密码文件
+	htpasswd -c /website/test/.htpasswd test
+	# 添加用户
+	htpasswd /website/test/.htpasswd test
+	# 修改密码
+	htpasswd -m /website/test/.htpasswd test
+
+4.重启apache生效
+
+5.注释：.htaccess文件内容也可以写到配置文件中，生成用户密码文件同上
+	<Directory "/website/test">
+		Options +Indexes +FollowSymLinks +ExecCGI
+		AllowOverride none
+		Order allow,deny
+		Allow from all
+		AuthName "login"
+		AuthType Basic
+		AuthUserFile /website/test/.htpasswd
+		require valid-user
+	</Directory>
