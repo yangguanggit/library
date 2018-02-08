@@ -1,221 +1,219 @@
 ﻿<?php
 /**
  * 文件上传类
- * @property object $self 对象实例
- * @property string $file 文件数组（$_FILES）
- * @property string $path 上传文件保存目录
- * @property string $url 上传成功文件地址
- * @property int $max 最大上传文件大小（单位M）
- * @property string $error 错误信息
- * @property array $ext 文件扩展名
+ * @author lilei
  */
-class FileUpload{
-    protected static $self;
-	protected $file;
-	protected $path;
-	protected $url;
-	protected $max;
-	protected $error;
-	protected $ext = array(
-		'image'=>array('png', 'jpg', 'gif', 'jpeg'),
-		'document'=>array('txt', 'doc', 'xls', 'ppt', 'pdf', 'docx', 'xlsx', 'pptx'),
-		'compress'=>array('zip', 'rar')
-	);
+class FileUpload
+{
+    protected static $that;
+    protected $file;
+    protected $path;
+    protected $url;
+    protected $ext = array(
+        'image' => array('png', 'jpg', 'gif', 'jpeg'),
+        'document' => array('txt', 'doc', 'xls', 'ppt', 'pdf', 'docx', 'xlsx', 'pptx'),
+        'compress' => array('zip', 'rar')
+    );
 
     /**
      * 初始化
-     * @param null
-     * @return object 对象实例
+     * @return $this 对象实例
      */
-    public static function init(){
-        if(self::$self === null){
-            self::$self = new self();
+    public static function init()
+    {
+        if (empty(self::$that) || !(self::$that instanceof self)) {
+            self::$that = new self();
         }
-        return self::$self;
+        return self::$that;
     }
 
     /**
      * 构造函数
-     * @param null
-     * @return null
      */
-    protected function __construct(){
-    	
+    protected function __construct()
+    {
+
     }
 
-	/**
-     * 转换文件数组格式（多文件上传时使用）
-     * @param null
-     * @return array 转换后文件数组
+    /**
+     * 禁止克隆
      */
-	protected function exchange(){
-		$array = array();
-		foreach($this->file as $k => $v){
-			foreach($v as $i => $j){
-				$array[$i][$k] = $j;
-			}
-		}
-		return $array;
-	}
+    protected function __clone()
+    {
 
-	/**
+    }
+
+    /**
+     * 转换文件数组格式（多文件上传）
+     * @return $this 对象实例
+     */
+    protected function exchange()
+    {
+        $array = array();
+        foreach ($this->file as $k => $v) {
+            foreach ($v as $i => $j) {
+                $array[$i][$k] = $j;
+            }
+        }
+        $this->file = $array;
+        return $this;
+    }
+
+    /**
      * 判断文件是否上传
      * @param string $name 文件名
      * @return bool
      */
-	protected function isUpload($name){
-		return is_uploaded_file($name);
-	}
+    protected function isUpload($name)
+    {
+        return is_uploaded_file($name);
+    }
 
-	/**
+    /**
      * 检查文件大小
      * @param int $size 文件大小
+     * @param int $max 最大上传文件大小
      * @return bool
      */
-	protected function checkSize($size){
-		if($size>$this->max*1024*1024 || $size==0){
-			$this->error = '文件不能大于'.$this->max.'M，请重新上传';
-	        return false;
-		}
-		return true;
-	}
+    protected function checkSize($size, $max = 2)
+    {
+        return $size != 0 && $size < $max * 1024 * 1024;
+    }
 
-	/**
+    /**
      * 检查文件格式
      * @param string $name 文件名
      * @param string $type 文件类型
      * @return bool|string 成功返回文件类型，失败返回false
      */
-	protected function checkExtension($name, $type){
-		$info = pathinfo($name);
+    protected function checkExtension($name, $type)
+    {
+        $info = pathinfo($name);
         $ext = strtolower($info['extension']);
-		if($type=='all'){
-	    	if(in_array($ext, $this->ext['image'])){
-	    		$type = 'image';
-	    	}else if(in_array($ext, $this->ext['document'])){
-	    		$type = 'document';
-	    	}else if(in_array($ext, $this->ext['compress'])){
-	    		$type = 'compress';
-	    	}else{
-	        	$this->error = '文件格式不正确，请上传图片、文档、压缩文件';
-	    	}
-	    }else if($type=='image' && !in_array($ext, $this->ext['image'])){
-	        $this->error = '文件格式不正确，请上传图片';
-	    }else if($type=='document' && !in_array($ext, $this->ext['document'])){
-	        $this->error = '文件格式不正确，请上传文档';
-	    }else if($type=='compress' && !in_array($ext, $this->ext['compress'])){
-	        $this->error = '文件格式不正确，请上传压缩文件';
-	    }
-	    if($this->error){
-	    	return false;
-	    }else{
-	    	return $type;
-	    }
-	}
+        if ($type == 'all') {
+            if (in_array($ext, $this->ext['image'])) {
+                $type = 'image';
+            } else if (in_array($ext, $this->ext['document'])) {
+                $type = 'document';
+            } else if (in_array($ext, $this->ext['compress'])) {
+                $type = 'compress';
+            } else {
+                return false;
+            }
+        } else if ($type == 'image' && !in_array($ext, $this->ext['image'])) {
+            return false;
+        } else if ($type == 'document' && !in_array($ext, $this->ext['document'])) {
+            return false;
+        } else if ($type == 'compress' && !in_array($ext, $this->ext['compress'])) {
+            return false;
+        }
+        return $type;
+    }
 
-	/**
+    /**
      * 创建目录
-     * @param string $dir 文件保存目录
-     * @return null
+     * @param string $dir 文件保存子目录
+     * @return $this 对象实例
      */
-	protected function makeDir($dir=''){
-		$this->path = $_SERVER['DOCUMENT_ROOT'].'/upload';
-		$this->url = '/upload';
-		if($dir){
-			$this->path .= '/'.$dir;
-			$this->url .= '/'.$dir;
-		}
-		if(!is_dir($this->path)){
-		    mkdir($this->path, 0777, true);
-		    chmod($this->path, 0777);
-		}
-	}
+    protected function makeDir($dir = '')
+    {
+        $this->path = $_SERVER['DOCUMENT_ROOT'] . '/upload';
+        $this->url = '/upload';
+        if ($dir) {
+            $this->path .= '/' . $dir;
+            $this->url .= '/' . $dir;
+        }
+        if (!is_dir($this->path)) {
+            mkdir($this->path, 0777, true);
+            chmod($this->path, 0777);
+        }
+        return $this;
+    }
 
-	/**
+    /**
      * 生成新的文件名
      * @param string $name 原文件名
-     * @return null
+     * @return $this 对象实例
      */
-	protected function generateName($name){
-		$name = date('YmdHis').mt_rand(10, 99).$name;
-		$this->path .= '/'.$name;
-		$this->url .= '/'.$name;
-	}
+    protected function generateName($name = '')
+    {
+        $name = date('YmdHis') . mt_rand(10, 99) . $name;
+        $this->path .= '/' . $name;
+        $this->url .= '/' . $name;
+        return $this;
+    }
 
-	/**
+    /**
      * 移动临时文件到上传文件保存目录
      * @param string $name 临时文件名
      * @return bool
      */
-	protected function moveUpload($name){
-		return move_uploaded_file($name, $this->path);
-	}
+    protected function moveUpload($name)
+    {
+        return move_uploaded_file($name, $this->path);
+    }
 
-	/**
+    /**
      * 单文件上传
      * @param string $name 表单文件控件名
      * @param string $type 文件类型
      * @param int $max 最大上传文件大小（单位M）
      * @param string $dir 文件保存目录
-     * @return array|bool 成功返回数组，失败返回错误信息
+     * @return array|string 成功返回数组，失败返回错误信息
      */
-	public function upload($name, $type='all', $max=2, $dir=''){
-		if(empty($_FILES[$name])){
-			return '数据错误';
-		}
-		$this->file = $_FILES[$name];
-		$this->error = $this->file['error'];
-		$this->max = $max;
-		$tempName = $this->file['tmp_name'];
-		$name = $this->file['name'];
-        $size = $this->file['size'];
-        if($this->isUpload($tempName) && $this->checkSize($size) && ($fileType=$this->checkExtension($name, $type))){
-			$this->makeDir($dir);
-    		$this->generateName($name);
-    		if($this->moveUpload($tempName)){
-    			return array('name'=>$name, 'type'=>$fileType, 'url'=>$this->url);
-    		}
+    public function upload($name, $type = 'all', $max = 2, $dir = '')
+    {
+        if (empty($_FILES[$name])) {
+            return '数据错误';
         }
-        return $this->error;
-	}
+        $this->file = $_FILES[$name];
+        $error = $this->file['error'];
+        $tempName = $this->file['tmp_name'];
+        $name = $this->file['name'];
+        $size = $this->file['size'];
+        if ($this->isUpload($tempName) && $this->checkSize($size, $max) && ($fileType = $this->checkExtension($name, $type))) {
+            if ($this->makeDir($dir)->generateName($name)->moveUpload($tempName)) {
+                return array('name' => $name, 'type' => $fileType, 'url' => $this->url);
+            }
+        }
+        return $error;
+    }
 
-	/**
+    /**
      * 多文件上传
      * @param string $name 表单文件控件名
      * @param string $type 文件类型
      * @param int $max 最大上传文件大小（单位M）
      * @param string $dir 文件保存目录
-     * @return array|bool 成功返回数组，失败返回错误信息
+     * @return array|string 成功返回文件信息数组，错误返回提示信息
      */
-	public function multipleUpload($name, $type='all', $max=2, $dir=''){
-		if(empty($_FILES[$name])){
-			return '数据错误';
-		}
-		$this->file = $_FILES[$name];
-		$this->file = $this->exchange();
-		$this->max = $max;
-		$result = array();
-		$success = count($this->file);
-		$fail = 0;
-		foreach($this->file as $v){
-			$tempName = $v['tmp_name'];
-			$name = $v['name'];
-	        $size = $v['size'];
-	        if($this->isUpload($tempName) && $this->checkSize($size) && ($fileType=$this->checkExtension($name, $type))){
-				$this->makeDir($dir);
-        		$this->generateName($name);
-        		if($this->moveUpload($tempName)){
-        			$result['data'][] = array('name'=>$name, 'type'=>$fileType, 'url'=>$this->url);
-        			continue;
-        		}
-	        }
-        	$success--;
-        	$fail++;
-		}
-		
-		$result['success'] = $success;
-		$result['fail'] = $fail;
-		return $result;
-	}
+    public function multipleUpload($name, $type = 'all', $max = 2, $dir = '')
+    {
+        if (empty($_FILES[$name])) {
+            return '数据错误';
+        }
+        $this->file = $_FILES[$name];
+        $this->exchange();
+        $result = array();
+        $success = count($this->file);
+        $fail = 0;
+        foreach ($this->file as $v) {
+            $tempName = $v['tmp_name'];
+            $name = $v['name'];
+            $size = $v['size'];
+            if ($this->isUpload($tempName) && $this->checkSize($size, $max) && ($fileType = $this->checkExtension($name, $type))) {
+                if ($this->makeDir($dir)->generateName($name)->moveUpload($tempName)) {
+                    $result['data'][] = array('name' => $name, 'type' => $fileType, 'url' => $this->url);
+                    continue;
+                }
+            }
+            $success--;
+            $fail++;
+        }
+
+        $result['success'] = $success;
+        $result['fail'] = $fail;
+        return $result;
+    }
 }
 ?>
