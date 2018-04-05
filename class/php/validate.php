@@ -5,43 +5,13 @@
  */
 class Validate
 {
-    protected static $that;
-
-    /**
-     * 初始化
-     * @return $this 对象实例
-     */
-    public static function init()
-    {
-        if (empty(self::$that) || !(self::$that instanceof self)) {
-            self::$that = new self();
-        }
-        return self::$that;
-    }
-
-    /**
-     * 构造函数
-     */
-    protected function __construct()
-    {
-
-    }
-
-    /**
-     * 禁止克隆
-     */
-    protected function __clone()
-    {
-
-    }
-
     /**
      * 正则校验
      * @param int|string $value 输入值
      * @param string $type 类型
      * @return bool|array 数组包含匹配到的信息
      */
-    public function check($value, $type)
+    public static function check($value, $type)
     {
         switch ($type) {
             case 'id':

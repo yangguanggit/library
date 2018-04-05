@@ -166,7 +166,7 @@ class Socket
      * @param string|callable $callback 回调函数（响应数据注入参数）
      * @return string|mixed 响应数据
      */
-    public function client($host, $port, $request = 'test', $callback = null)
+    public function client($host, $port, $request, $callback = null)
     {
         // 忽略脚本超时
         set_time_limit(0);

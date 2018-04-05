@@ -241,5 +241,4 @@ function cliInput($text)
     $input = trim(fgets(STDIN));
     return $input;
 }
-
 ?>

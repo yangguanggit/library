@@ -7,7 +7,7 @@ class VerifyCode
 {
     protected static $that;
     protected $image;
-    protected $string = '23456789abcdefghkmnpqrstuvwxyzABCDEFGHKMNPQRSTUVWXYZ';
+    protected $string = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     protected $code;
     protected $config = array(
         'length' => 4,
