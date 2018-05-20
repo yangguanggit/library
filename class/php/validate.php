@@ -24,7 +24,7 @@ class Validate
                 break;
             case 'mobile':
                 // 手机号码
-                if (preg_match('/^1[345678]\d{9}$/', $value)) {
+                if (preg_match('/^1[3456789]\d{9}$/', $value)) {
                     return true;
                 } else {
                     return false;
@@ -49,6 +49,13 @@ class Validate
             case 'email':
                 // 邮箱
                 if (preg_match('/^\w+(?:[.-]?\w+)*@\w+(?:[.-]?\w+)*\.[a-zA-Z]+$/', $value)) {
+                    return true;
+                } else {
+                    return false;
+                }
+                break;
+            case 'ip':
+                if (preg_match('/^(?:(0|[1-9]\d?|1\d{2}|2[0-4]\d|25[0-5])\.){3}(0|[1-9]\d?|1\d{2}|2[0-4]\d|25[0-5])$/', $value)) {
                     return true;
                 } else {
                     return false;
