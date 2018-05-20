@@ -9,7 +9,7 @@ password='beego'
 # program name
 name='beego'
 # nginx virtual host config file 
-config="/usr/local/service/nginx/conf/vhost/web.$name.com.conf"
+config="/etc/nginx/conf/vhost/www.$name.com.conf"
 # log directory
 log="/data/log/$name"
 # program source file directory
