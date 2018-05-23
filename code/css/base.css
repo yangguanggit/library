@@ -201,7 +201,7 @@ input[type="checkbox"]:checked + label:before {
     background: #3e97eb;
 }
 
-/*class*/
+/*code*/
 .active {
     background: #3e97eb !important;
     color: #fff !important;

@@ -9,7 +9,7 @@ password='beego'
 # program name
 name='beego'
 # nginx virtual host config file 
-config="/etc/nginx/conf/vhost/www.$name.com.conf"
+config="/etc/nginx/conf/www.${name}.com.conf"
 # log directory
 log="/data/log/$name"
 # program source file directory
@@ -87,9 +87,9 @@ function reloadNginx() {
 
 echo ">>>>>>>>>> begin at $(date '+%Y-%m-%d %H:%M:%S') >>>>>>>>>>"
 
-echo '1.prepare'
+echo '1.prepare something'
 prepare
-echo '2.install program'
+echo '2.install program and run'
 installProgram
 echo '3.reload nginx'
 reloadNginx
